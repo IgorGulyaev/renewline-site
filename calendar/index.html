@@ -1,0 +1,1031 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Renewal calendar builder — free, nothing uploaded</title>
+<meta name="description" content="Drop in a CSV of licence and warranty expiry dates and get back an .ics calendar with a reminder 30 days before each renewal. Runs entirely in your browser.">
+<meta name="robots" content="index, follow">
+<meta property="og:title" content="Renewal calendar builder — free, nothing uploaded">
+<meta property="og:description" content="Drop in a CSV of licence and warranty expiry dates and get back an .ics calendar with a reminder 30 days before each renewal. Runs entirely in your browser.">
+<meta property="og:type" content="website">
+<style>
+  :root{color-scheme:light dark;box-sizing:border-box;
+        padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+  body{margin:0;padding:0}
+  img{max-width:100%}
+  [hidden]{display:none!important}
+</style>
+</head>
+<body>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+:root{
+  --paper:#EEF1F3; --panel:#FFFFFF; --ink:#15191E; --muted:#5F6A75; --line:#D9DFE4;
+  --claret:#8E2B3F; --teal:#0F6357; --amber:#8A5A0C;
+  --display:'Newsreader',Georgia,serif;
+  --body:'IBM Plex Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#121619; --panel:#1A1F24; --ink:#E7ECF1; --muted:#95A1AC; --line:#2B333A;
+    --claret:#D9788C; --teal:#4FB9A0; --amber:#D7A44E;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#121619; --panel:#1A1F24; --ink:#E7ECF1; --muted:#95A1AC; --line:#2B333A;
+  --claret:#D9788C; --teal:#4FB9A0; --amber:#D7A44E;
+}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6}
+.page{max-width:1000px;margin:0 auto;padding:0 20px 64px}
+a{color:var(--claret)}
+.mast{padding-block:36px 6px;display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.word{font-family:var(--display);font-size:24px;font-weight:500;letter-spacing:-0.015em}
+.word em{font-style:normal;color:var(--claret)}
+.word a{text-decoration:none;color:inherit}
+.tag{font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(27px,4vw,38px);line-height:1.15;
+   letter-spacing:-0.02em;margin:22px 0 12px;max-width:17ch;text-wrap:balance}
+h2{font-size:14px;font-weight:600;margin:0 0 12px;letter-spacing:-0.005em}
+p{margin:0 0 14px;max-width:62ch}
+.muted{color:var(--muted)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:5px;padding:22px;margin-top:20px}
+
+/* drop zone */
+.drop{border:1.5px dashed var(--line);border-radius:5px;padding:34px 22px;text-align:center;
+      background:var(--panel);transition:border-color .15s ease, background .15s ease}
+.drop.over{border-color:var(--claret);background:color-mix(in srgb,var(--claret) 6%,var(--panel))}
+.drop input[type=file]{display:block;margin:12px auto 0;max-width:340px;font-size:14px}
+.privacy{font-family:var(--mono);font-size:12px;color:var(--teal);margin-top:14px}
+
+button{font-family:var(--body);font-size:15px;font-weight:600;color:#fff;background:var(--claret);
+       border:0;border-radius:3px;padding:10px 18px;cursor:pointer}
+button.ghost{background:transparent;color:var(--ink);border:1px solid var(--line);font-weight:500}
+button:disabled{opacity:.5;cursor:default}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+/* results */
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-top:20px}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:5px;padding:14px}
+.tile .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.tile .v{font-size:24px;font-weight:650;letter-spacing:-0.02em;margin-top:5px;font-variant-numeric:tabular-nums}
+.tile .n{font-size:12px;color:var(--muted);margin-top:2px}
+.tile.warn .v{color:var(--claret)}
+
+.bars{margin-top:6px}
+.bar-row{margin-bottom:12px}
+.bar-head{display:flex;justify-content:space-between;gap:12px;font-size:14px;align-items:baseline}
+.bar-head b{font-variant-numeric:tabular-nums}
+.bar{height:7px;border-radius:99px;background:var(--line);overflow:hidden;margin-top:6px}
+.bar > i{display:block;height:100%;background:var(--claret)}
+.bar-row.later .bar > i{background:var(--muted)}
+
+.tblwrap{overflow-x:auto;margin-top:4px}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{text-align:left;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+   color:var(--muted);font-weight:500;padding:0 10px 9px 0;border-bottom:1px solid var(--line)}
+td{padding:10px 10px 10px 0;border-bottom:1px solid var(--line);vertical-align:top}
+.num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.due{font-family:var(--mono);font-size:12.5px}
+.due.past{color:var(--claret)}
+.due.soon{color:var(--amber)}
+.sub{font-size:12px;color:var(--muted);margin-top:2px}
+
+.notice{font-size:13.5px;color:var(--muted);margin-top:12px;padding-left:24px;position:relative}
+.notice::before{content:"!";position:absolute;left:0;top:0;width:16px;height:16px;border-radius:50%;
+  background:var(--amber);color:var(--paper);font-size:11px;font-weight:700;text-align:center;line-height:16px}
+.err{color:var(--claret);margin-top:12px}
+.hide{display:none!important}
+footer{margin-top:40px;padding-top:20px;border-top:1px solid var(--line);font-size:13.5px;color:var(--muted)}
+</style>
+
+<div class="page">
+  <header class="mast">
+    <div class="word"><a href="../">Renew<em>line</em></a></div>
+    <div class="tag">Free tool · nothing uploaded</div>
+  </header>
+
+  <h1>Turn your renewals spreadsheet into a calendar.</h1>
+  <p class="muted">Drop in any CSV export with an expiry date column. You get the dates back as
+  an <span style="font-family:var(--mono);font-size:13px">.ics</span> calendar file — one entry per
+  renewal, each with a reminder 30 days before, so the date you find out is not the date it lapses.</p>
+
+  <div class="drop" id="drop">
+    <strong>Drop a CSV here</strong>
+    <div class="muted" style="font-size:14px;margin-top:4px">or choose a file</div>
+    <input type="file" id="file" accept=".csv,.tsv,.txt">
+    <div class="row" style="justify-content:center;margin-top:14px">
+      <button class="ghost" id="sample" type="button">Try it with sample data</button>
+    </div>
+    <div class="privacy">Read in your browser. Nothing is uploaded — turn off your wifi and it still works.</div>
+  </div>
+
+  <div class="err hide" id="error"></div>
+
+  <div id="results" class="hide">
+    <div class="tiles" id="tiles"></div>
+
+    <div class="panel">
+      <h2>Expiring by window</h2>
+      <div class="bars" id="bars"></div>
+      <div class="row" style="margin-top:16px">
+        <button id="dlIcs" type="button">Download calendar (.ics)</button>
+        <button class="ghost" id="dlCsv" type="button">Download cleaned CSV</button>
+        <span class="muted" id="dlmsg" style="font-size:13.5px"></span>
+      </div>
+      <div class="muted" style="font-size:13px;margin-top:10px">
+        Import the .ics into Outlook, Google Calendar or Apple Calendar. Each entry carries the
+        customer, product, quantity and what it last sold for.
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>What was read</h2>
+      <div id="report"></div>
+      <div class="tblwrap">
+        <table>
+          <thead><tr>
+            <th>Customer</th><th>Item</th><th class="num">Qty</th>
+            <th class="num">Expires</th><th class="num">In</th><th class="num">Value</th>
+          </tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+      <div class="muted" style="font-size:13px;margin-top:10px" id="morenote"></div>
+    </div>
+
+    <div class="panel">
+      <h2>This is the easy half</h2>
+      <p class="muted" style="margin:0">Knowing a renewal is due is not the same as quoting it.
+      Renewline takes the same file and produces the priced renewal quote and the client email,
+      then chases you until they are sent.
+      <a href="../">See what that looks like</a>, or
+      <a href="https://renewline-demo.onrender.com">open the demo</a> — no signup, sample data loaded.</p>
+    </div>
+  </div>
+
+  <footer>
+    <p>Built by <a href="../">Renewline</a>. The parser here is the same one the product uses, so what
+    you see is what you would get. Questions: <a href="mailto:renewline.uk@gmail.com">renewline.uk@gmail.com</a></p>
+  </footer>
+</div>
+
+<script>
+/* Renewline — bundled from src/parse.js, src/normalize.js, src/ics.js. Do not edit here. */
+(function () {
+  'use strict';
+  var registry = {};
+  var cache = {};
+  function require(id) {
+    var key = String(id).replace(/^\.\//, '').replace(/\.js$/, '');
+    if (cache[key]) return cache[key].exports;
+    if (!registry[key]) throw new Error('module not bundled: ' + id);
+    var module = { exports: {} };
+    cache[key] = module;
+    registry[key](module, module.exports, require);
+    return module.exports;
+  }
+  registry["parse"] = function (module, exports, require) {
+'use strict';
+// Renewline — tolerant parsing of real-world reseller spreadsheet exports.
+// Zero dependencies. See DECISIONS.md D-004.
+
+const DELIMITERS = [',', ';', '\t', '|'];
+
+/** Pick the delimiter that yields the most consistent column count. */
+function sniffDelimiter(text) {
+  const sample = text.split(/\r?\n/).filter((l) => l.trim() !== '').slice(0, 20);
+  if (sample.length === 0) return ',';
+  let best = ',';
+  let bestScore = -1;
+  for (const d of DELIMITERS) {
+    const counts = sample.map((l) => splitLine(l, d).length);
+    const max = Math.max(...counts);
+    if (max < 2) continue;
+    const consistent = counts.filter((c) => c === max).length / counts.length;
+    const score = consistent * 10 + max;
+    if (score > bestScore) {
+      bestScore = score;
+      best = d;
+    }
+  }
+  return best;
+}
+
+/** Split one physical line honouring double quotes (used only for sniffing). */
+function splitLine(line, delim) {
+  const out = [];
+  let cur = '';
+  let inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (inQ) {
+      if (c === '"') {
+        if (line[i + 1] === '"') { cur += '"'; i++; } else inQ = false;
+      } else cur += c;
+    } else if (c === '"') inQ = true;
+    else if (c === delim) { out.push(cur); cur = ''; }
+    else cur += c;
+  }
+  out.push(cur);
+  return out;
+}
+
+/**
+ * Parse delimited text into { headers, rows }.
+ * Handles quoted fields containing the delimiter or newlines, CRLF, and a BOM.
+ */
+function parseDelimited(text, delimiter) {
+  let src = String(text ?? '');
+  if (src.charCodeAt(0) === 0xfeff) src = src.slice(1);
+  const delim = delimiter || sniffDelimiter(src);
+
+  const records = [];
+  let row = [];
+  let cur = '';
+  let inQ = false;
+  let started = false;
+
+  const endField = () => { row.push(cur); cur = ''; started = false; };
+  const endRow = () => {
+    endField();
+    if (row.length > 1 || row[0] !== '') records.push(row);
+    row = [];
+  };
+
+  for (let i = 0; i < src.length; i++) {
+    const c = src[i];
+    if (inQ) {
+      if (c === '"') {
+        if (src[i + 1] === '"') { cur += '"'; i++; } else inQ = false;
+      } else cur += c;
+      continue;
+    }
+    if (c === '"' && !started) { inQ = true; started = true; continue; }
+    if (c === delim) { endField(); continue; }
+    if (c === '\r') { if (src[i + 1] === '\n') i++; endRow(); continue; }
+    if (c === '\n') { endRow(); continue; }
+    cur += c;
+    started = true;
+  }
+  if (cur !== '' || row.length > 0) endRow();
+
+  if (records.length === 0) return { headers: [], rows: [], delimiter: delim };
+
+  // Some exports put a title or blank lines above the real header. The header
+  // is the first row whose cells are mostly non-empty and mostly non-numeric.
+  let headerIdx = 0;
+  for (let i = 0; i < Math.min(records.length, 10); i++) {
+    const r = records[i];
+    const filled = r.filter((c) => c.trim() !== '');
+    if (filled.length < 2) continue;
+    const numeric = filled.filter((c) => /^-?[\d.,\s£$€%()]+$/.test(c.trim())).length;
+    if (numeric / filled.length < 0.5 && filled.length >= r.length * 0.5) {
+      headerIdx = i;
+      break;
+    }
+  }
+
+  const headers = records[headerIdx].map((h) => h.trim());
+  const rows = [];
+  for (let i = headerIdx + 1; i < records.length; i++) {
+    const r = records[i];
+    if (r.every((c) => c.trim() === '')) continue;
+    const obj = {};
+    headers.forEach((h, j) => { obj[h] = (r[j] ?? '').trim(); });
+    rows.push(obj);
+  }
+  return { headers, rows, delimiter: delim };
+}
+
+// ---------------------------------------------------------------------------
+// Column mapping
+// ---------------------------------------------------------------------------
+
+const FIELD_SYNONYMS = {
+  customer: ['customer', 'customername', 'client', 'clientname', 'enduser', 'endusername',
+    'company', 'companyname', 'account', 'accountname', 'organisation', 'organization', 'kunde'],
+  vendor: ['vendor', 'manufacturer', 'publisher', 'brand', 'make', 'supplier', 'oem'],
+  product: ['product', 'productname', 'description', 'itemdescription', 'item', 'itemname',
+    'licence', 'license', 'service', 'subscription', 'productdescription', 'lineitem'],
+  sku: ['sku', 'partnumber', 'partno', 'partcode', 'mpn', 'code', 'itemcode', 'productcode', 'articlenumber'],
+  quantity: ['quantity', 'qty', 'seats', 'units', 'licences', 'licenses', 'count', 'volume'],
+  unitCost: ['unitcost', 'cost', 'costprice', 'buyprice', 'buy', 'netcost', 'purchaseprice', 'costeach'],
+  unitPrice: ['unitprice', 'price', 'sellprice', 'sell', 'saleprice', 'unitsell', 'rrp', 'listprice', 'priceeach'],
+  lineTotal: ['linetotal', 'total', 'totalprice', 'extended', 'extendedprice', 'amount', 'value', 'totalvalue', 'annualvalue'],
+  startDate: ['startdate', 'start', 'commencement', 'commencementdate', 'from', 'fromdate', 'effectivedate', 'purchasedate'],
+  endDate: ['enddate', 'end', 'expiry', 'expirydate', 'expires', 'expireson', 'expiration', 'expirationdate',
+    'renewaldate', 'renewal', 'validuntil', 'validto', 'todate', 'duedate', 'nextrenewal', 'contractend'],
+  term: ['term', 'duration', 'billingterm', 'period', 'contractlength', 'months'],
+  reference: ['reference', 'ref', 'order', 'orderno', 'ordernumber', 'po', 'ponumber', 'contract',
+    'contractid', 'agreement', 'agreementid', 'subscriptionid', 'invoice', 'invoiceno'],
+  owner: ['owner', 'accountmanager', 'am', 'rep', 'salesperson', 'salesrep', 'assignedto', 'consultant'],
+  currency: ['currency', 'ccy', 'curr'],
+  notes: ['notes', 'note', 'comment', 'comments', 'remarks'],
+};
+
+const norm = (s) => String(s ?? '').toLowerCase().replace(/[^a-z0-9]/g, '');
+
+/**
+ * Map spreadsheet headers onto canonical fields.
+ * Exact synonym match first, then containment, so "Contract End Date (UTC)"
+ * still finds endDate. Each header is used at most once.
+ */
+function mapColumns(headers) {
+  const mapping = {};
+  const usedHeaders = new Set();
+  const normalized = headers.map((h) => ({ raw: h, n: norm(h) }));
+
+  for (const [field, syns] of Object.entries(FIELD_SYNONYMS)) {
+    for (const h of normalized) {
+      if (usedHeaders.has(h.raw) || h.n === '') continue;
+      if (syns.includes(h.n)) { mapping[field] = h.raw; usedHeaders.add(h.raw); break; }
+    }
+  }
+  for (const [field, syns] of Object.entries(FIELD_SYNONYMS)) {
+    if (mapping[field]) continue;
+    let bestHeader = null;
+    let bestLen = 0;
+    for (const h of normalized) {
+      if (usedHeaders.has(h.raw) || h.n === '') continue;
+      for (const s of syns) {
+        if (s.length >= 3 && h.n.includes(s) && s.length > bestLen) {
+          bestHeader = h.raw;
+          bestLen = s.length;
+        }
+      }
+    }
+    if (bestHeader) { mapping[field] = bestHeader; usedHeaders.add(bestHeader); }
+  }
+  const unmapped = headers.filter((h) => !usedHeaders.has(h) && h !== '');
+  return { mapping, unmapped };
+}
+
+// ---------------------------------------------------------------------------
+// Dates
+// ---------------------------------------------------------------------------
+
+const MONTHS = {
+  jan: 1, january: 1, feb: 2, february: 2, mar: 3, march: 3, apr: 4, april: 4,
+  may: 5, jun: 6, june: 6, jul: 7, july: 7, aug: 8, august: 8, sep: 9, sept: 9,
+  september: 9, oct: 10, october: 10, nov: 11, november: 11, dec: 12, december: 12,
+};
+
+const pad = (n) => String(n).padStart(2, '0');
+const iso = (y, m, d) => `${y}-${pad(m)}-${pad(d)}`;
+
+function validYmd(y, m, d) {
+  if (!(y >= 1970 && y <= 2100)) return false;
+  if (!(m >= 1 && m <= 12)) return false;
+  const dim = new Date(Date.UTC(y, m, 0)).getUTCDate();
+  return d >= 1 && d <= dim;
+}
+
+/**
+ * Parse a single date cell. `dayFirst` resolves the dd/mm vs mm/dd ambiguity
+ * and should come from inferDateOrder() over the whole column.
+ * Returns an ISO yyyy-mm-dd string, or null.
+ */
+function parseDate(value, dayFirst = true) {
+  if (value == null) return null;
+  const s = String(value).trim();
+  if (s === '' || /^(n\/?a|none|null|-|tbc|tbd)$/i.test(s)) return null;
+
+  let m = s.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/);
+  if (m) {
+    const [y, mo, d] = [+m[1], +m[2], +m[3]];
+    return validYmd(y, mo, d) ? iso(y, mo, d) : null;
+  }
+
+  m = s.match(/^(\d{1,2})[-/. ](\d{1,2})[-/. ](\d{2,4})/);
+  if (m) {
+    let a = +m[1]; let b = +m[2]; let y = +m[3];
+    if (y < 100) y += y < 70 ? 2000 : 1900;
+    let d; let mo;
+    if (a > 12 && b <= 12) { d = a; mo = b; }
+    else if (b > 12 && a <= 12) { mo = a; d = b; }
+    else if (dayFirst) { d = a; mo = b; }
+    else { mo = a; d = b; }
+    return validYmd(y, mo, d) ? iso(y, mo, d) : null;
+  }
+
+  m = s.match(/^(\d{1,2})[-. ]?([A-Za-z]{3,9})[-. ,]+(\d{2,4})/);
+  if (m) {
+    const mo = MONTHS[m[2].toLowerCase()];
+    let y = +m[3];
+    if (y < 100) y += y < 70 ? 2000 : 1900;
+    if (mo && validYmd(y, mo, +m[1])) return iso(y, mo, +m[1]);
+  }
+
+  m = s.match(/^([A-Za-z]{3,9})[-. ]+(\d{1,2})(?:st|nd|rd|th)?[-. ,]+(\d{2,4})/);
+  if (m) {
+    const mo = MONTHS[m[1].toLowerCase()];
+    let y = +m[3];
+    if (y < 100) y += y < 70 ? 2000 : 1900;
+    if (mo && validYmd(y, mo, +m[2])) return iso(y, mo, +m[2]);
+  }
+
+  // Excel serial date (1900 date system, including its leap-year quirk).
+  if (/^\d{5}(\.\d+)?$/.test(s)) {
+    const serial = Math.floor(Number(s));
+    if (serial > 20000 && serial < 60000) {
+      const ms = Date.UTC(1899, 11, 30) + serial * 86400000;
+      const dt = new Date(ms);
+      return iso(dt.getUTCFullYear(), dt.getUTCMonth() + 1, dt.getUTCDate());
+    }
+  }
+
+  const t = Date.parse(s);
+  if (!Number.isNaN(t)) {
+    const dt = new Date(t);
+    const y = dt.getUTCFullYear();
+    if (y >= 1970 && y <= 2100) return iso(y, dt.getUTCMonth() + 1, dt.getUTCDate());
+  }
+  return null;
+}
+
+/**
+ * Decide whether a column of date strings is day-first or month-first.
+ * Evidence beats assumption: a value with a first component > 12 proves
+ * day-first; > 12 in the second component proves month-first. With no
+ * evidence either way we default to day-first (UK/EU reseller exports).
+ */
+function inferDateOrder(values) {
+  let dayFirstEvidence = 0;
+  let monthFirstEvidence = 0;
+  for (const v of values) {
+    const m = String(v ?? '').trim().match(/^(\d{1,2})[-/. ](\d{1,2})[-/. ](\d{2,4})/);
+    if (!m) continue;
+    const a = +m[1]; const b = +m[2];
+    if (a > 12 && b <= 12) dayFirstEvidence++;
+    else if (b > 12 && a <= 12) monthFirstEvidence++;
+  }
+  if (monthFirstEvidence > dayFirstEvidence) return { dayFirst: false, evidence: 'month-first values present' };
+  if (dayFirstEvidence > 0) return { dayFirst: true, evidence: 'day-first values present' };
+  return { dayFirst: true, evidence: 'no evidence; defaulted to day-first (UK/EU)' };
+}
+
+// ---------------------------------------------------------------------------
+// Money and numbers
+// ---------------------------------------------------------------------------
+
+const CURRENCY_SYMBOLS = { '£': 'GBP', '€': 'EUR', $: 'USD', '₹': 'INR', 'zł': 'PLN', kr: 'SEK' };
+
+/** Parse "£1,234.56", "1.234,56 €", "(99.00)", "1 234,56" → number. */
+function parseMoney(value) {
+  if (value == null) return null;
+  if (typeof value === 'number') return Number.isFinite(value) ? value : null;
+  let s = String(value).trim();
+  if (s === '' || /^(n\/?a|none|null|-)$/i.test(s)) return null;
+
+  let negative = false;
+  if (/^\(.*\)$/.test(s)) { negative = true; s = s.slice(1, -1); }
+  if (s.startsWith('-')) { negative = true; s = s.slice(1); }
+
+  s = s.replace(/[^\d.,]/g, '');
+  if (s === '') return null;
+
+  const lastComma = s.lastIndexOf(',');
+  const lastDot = s.lastIndexOf('.');
+  if (lastComma !== -1 && lastDot !== -1) {
+    // Whichever separator comes last is the decimal separator.
+    if (lastComma > lastDot) s = s.replace(/\./g, '').replace(',', '.');
+    else s = s.replace(/,/g, '');
+  } else if (lastComma !== -1) {
+    const after = s.length - lastComma - 1;
+    // "1,234" is thousands; "1,23" and "1,2345" are decimals.
+    s = after === 3 && s.indexOf(',') === lastComma && /^\d{1,3},\d{3}$/.test(s)
+      ? s.replace(',', '')
+      : s.replace(/,/g, '.');
+  }
+  s = s.replace(/,/g, '');
+  const n = Number(s);
+  if (!Number.isFinite(n)) return null;
+  return negative ? -n : n;
+}
+
+function detectCurrency(value, fallback = 'GBP') {
+  const s = String(value ?? '');
+  for (const [sym, code] of Object.entries(CURRENCY_SYMBOLS)) {
+    if (s.includes(sym)) return code;
+  }
+  const m = s.toUpperCase().match(/\b(GBP|EUR|USD|CHF|SEK|NOK|DKK|PLN|AUD|CAD)\b/);
+  return m ? m[1] : fallback;
+}
+
+/** Parse "12", "12 months", "1 year", "annual", "monthly" → months. */
+function parseTermMonths(value) {
+  if (value == null) return null;
+  const s = String(value).trim().toLowerCase();
+  if (s === '') return null;
+  if (/^(annual|yearly|per year|p\.?a\.?|1y)$/.test(s)) return 12;
+  if (/^(monthly|per month|1m)$/.test(s)) return 1;
+  if (/^(quarterly|per quarter)$/.test(s)) return 3;
+  const y = s.match(/^(\d+(?:\.\d+)?)\s*(?:y|yr|yrs|year|years)$/);
+  if (y) return Math.round(parseFloat(y[1]) * 12);
+  const mo = s.match(/^(\d+)\s*(?:m|mo|mos|month|months)?$/);
+  if (mo) {
+    const n = +mo[1];
+    return n > 0 && n <= 120 ? n : null;
+  }
+  return null;
+}
+
+function monthsBetween(startIso, endIso) {
+  if (!startIso || !endIso) return null;
+  const s = new Date(`${startIso}T00:00:00Z`);
+  const e = new Date(`${endIso}T00:00:00Z`);
+  const days = Math.round((e - s) / 86400000);
+  if (days <= 0) return null;
+  return Math.max(1, Math.round(days / 30.44));
+}
+
+module.exports = {
+  parseDelimited,
+  sniffDelimiter,
+  mapColumns,
+  parseDate,
+  inferDateOrder,
+  parseMoney,
+  detectCurrency,
+  parseTermMonths,
+  monthsBetween,
+  FIELD_SYNONYMS,
+};
+
+  };
+  registry["normalize"] = function (module, exports, require) {
+'use strict';
+// Renewline — turn raw spreadsheet rows into clean renewal records.
+
+const {
+  mapColumns, parseDate, inferDateOrder, parseMoney,
+  detectCurrency, parseTermMonths, monthsBetween,
+} = require('./parse');
+
+const BUCKETS = ['EXPIRED', 'D0_30', 'D31_60', 'D61_90', 'LATER'];
+
+function daysBetween(fromIso, toIso) {
+  const a = new Date(`${fromIso}T00:00:00Z`);
+  const b = new Date(`${toIso}T00:00:00Z`);
+  return Math.round((b - a) / 86400000);
+}
+
+function bucketFor(days) {
+  if (days == null) return 'LATER';
+  if (days < 0) return 'EXPIRED';
+  if (days <= 30) return 'D0_30';
+  if (days <= 60) return 'D31_60';
+  if (days <= 90) return 'D61_90';
+  return 'LATER';
+}
+
+function today() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+/** Stable identity for a renewal line, so re-importing a file updates rather than duplicates. */
+function fingerprint(r) {
+  const key = [
+    (r.customer || '').toLowerCase().trim(),
+    (r.sku || r.product || '').toLowerCase().trim(),
+    r.reference || '',
+    r.endDate || '',
+  ].join('|');
+  let h = 5381;
+  for (let i = 0; i < key.length; i++) h = ((h * 33) ^ key.charCodeAt(i)) >>> 0;
+  return h.toString(36) + '-' + key.length.toString(36);
+}
+
+/**
+ * Normalise parsed rows into renewal records.
+ * Returns { records, report } — the report is shown to the user before commit
+ * so nothing is silently dropped.
+ */
+function normalizeRows(headers, rows, opts = {}) {
+  const asOf = opts.asOf || today();
+  const defaultCurrency = opts.defaultCurrency || 'GBP';
+  const { mapping, unmapped } = opts.mapping
+    ? { mapping: opts.mapping, unmapped: opts.unmapped || [] }
+    : mapColumns(headers);
+
+  const endCol = mapping.endDate;
+  const startCol = mapping.startDate;
+  const dateOrder = endCol
+    ? inferDateOrder(rows.map((r) => r[endCol]))
+    : { dayFirst: true, evidence: 'no end-date column found' };
+
+  const records = [];
+  const rejected = [];
+  const warnings = [];
+
+  rows.forEach((row, i) => {
+    const get = (f) => (mapping[f] ? (row[mapping[f]] ?? '').toString().trim() : '');
+    const lineNo = i + 2; // +1 for header, +1 for 1-based
+
+    const endDate = parseDate(get('endDate'), dateOrder.dayFirst);
+    if (!endDate) {
+      rejected.push({
+        line: lineNo,
+        reason: endCol ? `could not read an end date from "${get('endDate')}"` : 'no end-date column in this file',
+        raw: row,
+      });
+      return;
+    }
+
+    const startDate = startCol ? parseDate(get('startDate'), dateOrder.dayFirst) : null;
+    const customer = get('customer') || '(no customer name)';
+    const product = get('product') || get('sku') || '(no description)';
+    if (customer === '(no customer name)') {
+      warnings.push({ line: lineNo, message: 'no customer name; grouped under "(no customer name)"' });
+    }
+
+    const qtyRaw = parseMoney(get('quantity'));
+    const quantity = qtyRaw && qtyRaw > 0 ? Math.round(qtyRaw) : 1;
+    const unitCost = parseMoney(get('unitCost'));
+    const unitPrice = parseMoney(get('unitPrice'));
+    let lineTotal = parseMoney(get('lineTotal'));
+    if (lineTotal == null && unitPrice != null) lineTotal = round2(unitPrice * quantity);
+    if (lineTotal == null && unitCost != null) {
+      lineTotal = round2(unitCost * quantity);
+      warnings.push({ line: lineNo, message: 'no sell price; value estimated from cost' });
+    }
+
+    const currency = mapping.currency
+      ? detectCurrency(get('currency'), defaultCurrency)
+      : detectCurrency(get('unitPrice') || get('lineTotal'), defaultCurrency);
+
+    let termMonths = parseTermMonths(get('term'));
+    if (!termMonths) termMonths = monthsBetween(startDate, endDate);
+
+    const totalCost = unitCost != null ? round2(unitCost * quantity) : null;
+    const marginPct = lineTotal && totalCost != null && lineTotal !== 0
+      ? round2(((lineTotal - totalCost) / lineTotal) * 100)
+      : null;
+
+    const annualValue = lineTotal == null
+      ? null
+      : termMonths && termMonths !== 12
+        ? round2((lineTotal / termMonths) * 12)
+        : round2(lineTotal);
+
+    const days = daysBetween(asOf, endDate);
+
+    const rec = {
+      customer,
+      vendor: get('vendor') || null,
+      product,
+      sku: get('sku') || null,
+      quantity,
+      unitCost,
+      unitPrice,
+      lineTotal,
+      annualValue,
+      marginPct,
+      currency,
+      startDate,
+      endDate,
+      termMonths: termMonths || null,
+      reference: get('reference') || null,
+      owner: get('owner') || null,
+      notes: get('notes') || null,
+      daysToExpiry: days,
+      bucket: bucketFor(days),
+      stage: 'NOT_STARTED',
+    };
+    rec.fingerprint = fingerprint(rec);
+    records.push(rec);
+  });
+
+  const mappedFields = Object.keys(mapping);
+  const report = {
+    rowsIn: rows.length,
+    rowsAccepted: records.length,
+    rowsRejected: rejected.length,
+    rejected: rejected.slice(0, 50),
+    warnings: warnings.slice(0, 50),
+    warningCount: warnings.length,
+    mapping,
+    mappedFieldCount: mappedFields.length,
+    unmappedColumns: unmapped,
+    dateOrder,
+    asOf,
+  };
+  return { records, report };
+}
+
+function round2(n) {
+  return Math.round((n + Number.EPSILON) * 100) / 100;
+}
+
+/** Recompute the time-sensitive fields for records already in the database. */
+function refreshTiming(rec, asOf = today()) {
+  const days = daysBetween(asOf, rec.endDate);
+  return { ...rec, daysToExpiry: days, bucket: bucketFor(days) };
+}
+
+module.exports = { normalizeRows, bucketFor, daysBetween, refreshTiming, fingerprint, today, round2, BUCKETS };
+
+  };
+  registry["ics"] = function (module, exports, require) {
+'use strict';
+// Renewline — turn normalised renewal records into an iCalendar file.
+// Pure and dependency-free so it can run in the browser (the free calendar
+// tool) and on the server alike.
+
+const CRLF = '\r\n';
+
+/** RFC 5545 text escaping: backslash, semicolon, comma and newline. */
+function escapeText(value) {
+  return String(value ?? '')
+    .replace(/\\/g, '\\\\')
+    .replace(/;/g, '\\;')
+    .replace(/,/g, '\\,')
+    .replace(/\r?\n/g, '\\n');
+}
+
+/** Lines must not exceed 75 octets; continuations begin with a single space. */
+function fold(line) {
+  const encoder = new TextEncoder(); // present in Node 22 and every browser
+  const out = [];
+  let current = '';
+  let bytes = 0;
+  for (const ch of line) {
+    const size = encoder.encode(ch).length;
+    if (bytes + size > 73) {
+      out.push(current);
+      current = ' ';
+      bytes = 1;
+    }
+    current += ch;
+    bytes += size;
+  }
+  out.push(current);
+  return out.join(CRLF);
+}
+
+const pad = (n) => String(n).padStart(2, '0');
+
+function toIcsDate(iso) {
+  return String(iso).slice(0, 10).replace(/-/g, '');
+}
+
+function addDaysIso(iso, days) {
+  const d = new Date(`${String(iso).slice(0, 10)}T00:00:00Z`);
+  return new Date(d.getTime() + days * 86400000).toISOString().slice(0, 10);
+}
+
+function stamp(date = new Date()) {
+  return `${date.getUTCFullYear()}${pad(date.getUTCMonth() + 1)}${pad(date.getUTCDate())}`
+    + `T${pad(date.getUTCHours())}${pad(date.getUTCMinutes())}${pad(date.getUTCSeconds())}Z`;
+}
+
+function money(value, currency = 'GBP') {
+  if (value == null) return null;
+  try {
+    return new Intl.NumberFormat('en-GB', { style: 'currency', currency, maximumFractionDigits: 0 }).format(value);
+  } catch {
+    return `${currency} ${Math.round(value)}`;
+  }
+}
+
+/**
+ * Build an .ics calendar: one all-day event on each renewal's expiry date,
+ * with an alarm `leadDays` before it, because the date you need to act on is
+ * not the date it expires.
+ */
+function toIcs(records, { leadDays = 30, now = new Date(), prodId = '-//Renewline//Renewal calendar//EN' } = {}) {
+  const dtstamp = stamp(now);
+  const lines = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    `PRODID:${prodId}`,
+    'CALSCALE:GREGORIAN',
+    'METHOD:PUBLISH',
+    'X-WR-CALNAME:Renewals',
+  ];
+
+  let n = 0;
+  for (const r of records) {
+    if (!r || !r.endDate) continue;
+    n += 1;
+    const value = money(r.lineTotal, r.currency);
+    const title = `Renewal due: ${r.customer} — ${r.product}${value ? ` (${value})` : ''}`;
+    const detail = [
+      r.vendor ? `Vendor: ${r.vendor}` : null,
+      r.sku ? `SKU: ${r.sku}` : null,
+      r.quantity ? `Quantity: ${r.quantity}` : null,
+      value ? `Last sold for: ${value}` : null,
+      r.reference ? `Reference: ${r.reference}` : null,
+      r.owner ? `Account manager: ${r.owner}` : null,
+      '',
+      `Quote this before ${r.endDate}.`,
+    ].filter((l) => l !== null).join('\n');
+
+    lines.push(
+      'BEGIN:VEVENT',
+      `UID:${r.fingerprint || `rl-${n}`}@renewline`,
+      `DTSTAMP:${dtstamp}`,
+      // All-day event: DTEND is exclusive, so it is the day after.
+      `DTSTART;VALUE=DATE:${toIcsDate(r.endDate)}`,
+      `DTEND;VALUE=DATE:${toIcsDate(addDaysIso(r.endDate, 1))}`,
+      fold(`SUMMARY:${escapeText(title)}`),
+      fold(`DESCRIPTION:${escapeText(detail)}`),
+      'TRANSP:TRANSPARENT',
+      'BEGIN:VALARM',
+      'ACTION:DISPLAY',
+      `TRIGGER:-P${leadDays}D`,
+      fold(`DESCRIPTION:${escapeText(`${leadDays} days until ${r.customer} renews — send the quote`)}`),
+      'END:VALARM',
+      'END:VEVENT',
+    );
+  }
+
+  lines.push('END:VCALENDAR');
+  return { ics: lines.join(CRLF) + CRLF, events: n };
+}
+
+module.exports = { toIcs, escapeText, fold, toIcsDate, addDaysIso };
+
+  };
+  window.RL = {
+    parse: require('parse'),
+    normalize: require('normalize'),
+    ics: require('ics')
+  };
+})();
+</script>
+<script>
+(() => {
+  'use strict';
+  const { parseDelimited } = RL.parse;
+  const { normalizeRows } = RL.normalize;
+  const { toIcs } = RL.ics;
+
+  const $ = (s) => document.querySelector(s);
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const money = (n, ccy) => {
+    if (n == null) return '—';
+    try { return new Intl.NumberFormat('en-GB', { style: 'currency', currency: ccy || 'GBP', maximumFractionDigits: 0 }).format(n); }
+    catch { return `${ccy || ''} ${Math.round(n)}`; }
+  };
+  const uk = (iso) => (iso ? iso.split('-').reverse().join('/') : '');
+
+  let current = null;
+
+  function show(err) {
+    $('#error').textContent = err;
+    $('#error').classList.toggle('hide', !err);
+  }
+
+  function render(records, report) {
+    current = records;
+    const ccy = records[0]?.currency || 'GBP';
+    const within = (d) => records.filter((r) => r.daysToExpiry >= 0 && r.daysToExpiry <= d);
+    const sum = (rs) => rs.reduce((s, r) => s + (r.lineTotal || 0), 0);
+    const expired = records.filter((r) => r.daysToExpiry < 0);
+
+    $('#tiles').innerHTML = [
+      ['Renewals read', String(records.length), `${report.rowsRejected} row${report.rowsRejected === 1 ? '' : 's'} skipped`, false],
+      ['Next 90 days', money(sum(within(90)), ccy), `${within(90).length} lines`, true],
+      ['Next 30 days', money(sum(within(30)), ccy), `${within(30).length} lines`, true],
+      ['Already expired', money(sum(expired), ccy), `${expired.length} lines`, expired.length > 0],
+      ['Total on file', money(sum(records), ccy), 'all dates', false],
+    ].map(([k, v, n, warn]) => `<div class="tile${warn ? ' warn' : ''}"><div class="k">${esc(k)}</div><div class="v">${esc(v)}</div><div class="n">${esc(n)}</div></div>`).join('');
+
+    const windows = [
+      ['Already expired', (r) => r.daysToExpiry < 0, false],
+      ['Next 30 days', (r) => r.daysToExpiry >= 0 && r.daysToExpiry <= 30, false],
+      ['31–60 days', (r) => r.daysToExpiry > 30 && r.daysToExpiry <= 60, false],
+      ['61–90 days', (r) => r.daysToExpiry > 60 && r.daysToExpiry <= 90, false],
+      ['Later', (r) => r.daysToExpiry > 90, true],
+    ].map(([label, test, later]) => {
+      const rs = records.filter(test);
+      return { label, later, count: rs.length, value: sum(rs) };
+    });
+    const max = Math.max(1, ...windows.map((w) => w.value));
+    $('#bars').innerHTML = windows.map((w) => `
+      <div class="bar-row${w.later ? ' later' : ''}">
+        <div class="bar-head"><span>${esc(w.label)}</span>
+          <span class="muted">${w.count} lines</span><b>${esc(money(w.value, ccy))}</b></div>
+        <div class="bar"><i style="width:${(w.value / max * 100).toFixed(1)}%"></i></div>
+      </div>`).join('');
+
+    const bits = [
+      `${report.rowsIn} rows read`,
+      `${report.mappedFieldCount} columns matched`,
+      `dates read as ${report.dateOrder.dayFirst ? 'day/month' : 'month/day'}`,
+    ];
+    let html = `<p class="muted" style="margin-bottom:10px">${bits.join(' · ')}.</p>`;
+    if (report.rowsRejected) {
+      html += `<div class="notice">${report.rowsRejected} row${report.rowsRejected === 1 ? ' was' : 's were'} skipped because the expiry date could not be read: `
+        + report.rejected.slice(0, 3).map((r) => `line ${r.line}`).join(', ')
+        + (report.rejected.length > 3 ? ` and ${report.rejected.length - 3} more` : '')
+        + '. Nothing was guessed.</div>';
+    }
+    $('#report').innerHTML = html;
+
+    const shown = records.slice(0, 100);
+    $('#rows').innerHTML = shown.map((r) => {
+      const d = r.daysToExpiry;
+      const cls = d < 0 ? 'past' : d <= 60 ? 'soon' : '';
+      return `<tr>
+        <td>${esc(r.customer)}</td>
+        <td>${esc(r.product)}${r.vendor ? `<div class="sub">${esc(r.vendor)}</div>` : ''}</td>
+        <td class="num">${r.quantity}</td>
+        <td class="num">${uk(r.endDate)}</td>
+        <td class="num due ${cls}">${d < 0 ? `${-d}d ago` : `${d}d`}</td>
+        <td class="num">${esc(money(r.lineTotal, r.currency))}</td>
+      </tr>`;
+    }).join('');
+    $('#morenote').textContent = records.length > shown.length
+      ? `Showing the first ${shown.length} of ${records.length}. All of them are in the downloads.`
+      : '';
+
+    $('#results').classList.remove('hide');
+    $('#results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function handle(text, name) {
+    show('');
+    try {
+      const { headers, rows } = parseDelimited(text);
+      if (!headers.length) return show('No header row found in that file.');
+      const { records, report } = normalizeRows(headers, rows);
+      if (!records.length) {
+        return show(report.mapping.endDate
+          ? 'No usable expiry dates in that file — every row was skipped.'
+          : 'No expiry date column found. It can be called Expiry Date, End Date, Renewal Date, Valid Until and so on.');
+      }
+      records.sort((a, b) => a.endDate.localeCompare(b.endDate));
+      render(records, report);
+    } catch (e) {
+      show(`That file could not be read: ${e.message}`);
+    }
+  }
+
+  function download(filename, content, type) {
+    const blob = new Blob([content], { type });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+  }
+
+  $('#dlIcs').addEventListener('click', () => {
+    if (!current) return;
+    const { ics, events } = toIcs(current, { leadDays: 30 });
+    download('renewals.ics', ics, 'text/calendar;charset=utf-8');
+    $('#dlmsg').textContent = `${events} calendar entries.`;
+  });
+
+  $('#dlCsv').addEventListener('click', () => {
+    if (!current) return;
+    const cols = ['customer', 'vendor', 'product', 'sku', 'quantity', 'unitPrice', 'lineTotal',
+      'currency', 'startDate', 'endDate', 'termMonths', 'daysToExpiry', 'reference', 'owner'];
+    const q = (v) => {
+      const s = v == null ? '' : String(v);
+      return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+    const csv = [cols.join(','), ...current.map((r) => cols.map((c) => q(r[c])).join(','))].join('\r\n');
+    download('renewals-cleaned.csv', csv, 'text/csv;charset=utf-8');
+    $('#dlmsg').textContent = `${current.length} rows.`;
+  });
+
+  $('#file').addEventListener('change', async (e) => {
+    const f = e.target.files[0];
+    if (f) handle(await f.text(), f.name);
+  });
+
+  const drop = $('#drop');
+  ['dragenter', 'dragover'].forEach((t) => drop.addEventListener(t, (e) => {
+    e.preventDefault(); drop.classList.add('over');
+  }));
+  ['dragleave', 'drop'].forEach((t) => drop.addEventListener(t, (e) => {
+    e.preventDefault(); drop.classList.remove('over');
+  }));
+  drop.addEventListener('drop', async (e) => {
+    const f = e.dataTransfer?.files?.[0];
+    if (f) handle(await f.text(), f.name);
+  });
+
+  $('#sample').addEventListener('click', async () => {
+    try {
+      const res = await fetch('sample-export.csv');
+      handle(await res.text(), 'sample-export.csv');
+    } catch {
+      show('Could not load the sample file.');
+    }
+  });
+})();
+</script>
+
+</body>
+</html>
