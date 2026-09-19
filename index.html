@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Renewline — renewal pipeline for IT resellers</title>
+<meta name="description" content="Import the spreadsheet you already keep. See what expires in the next 30, 60 and 90 days, which of it has no quote, and send the renewal quote before it lapses.">
+<meta name="robots" content="index, follow">
+<meta property="og:title" content="Renewline — renewal pipeline for IT resellers">
+<meta property="og:description" content="Import the spreadsheet you already keep. See what expires in the next 30, 60 and 90 days, which of it has no quote, and send the renewal quote before it lapses.">
+<meta property="og:type" content="website">
+<style>
+  :root{color-scheme:light dark;box-sizing:border-box;
+        padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+  body{margin:0;padding:0}
+  img{max-width:100%}
+  [hidden]{display:none!important}
+</style>
+</head>
+<body>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+:root{
+  --paper:#EEF1F3; --panel:#FFFFFF; --ink:#15191E; --muted:#5F6A75; --line:#D9DFE4;
+  --claret:#8E2B3F; --teal:#0F6357; --amber:#8A5A0C; --wash:#E4E9ED;
+  --display:'Newsreader',Georgia,'Times New Roman',serif;
+  --body:'IBM Plex Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#121619; --panel:#1A1F24; --ink:#E7ECF1; --muted:#95A1AC; --line:#2B333A;
+    --claret:#D9788C; --teal:#4FB9A0; --amber:#D7A44E; --wash:#20262C;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#121619; --panel:#1A1F24; --ink:#E7ECF1; --muted:#95A1AC; --line:#2B333A;
+  --claret:#D9788C; --teal:#4FB9A0; --amber:#D7A44E; --wash:#20262C;
+}
+
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);
+     font-size:16px;line-height:1.62;-webkit-font-smoothing:antialiased}
+.page{max-width:1040px;margin:0 auto;padding:0 20px}
+.col{max-width:660px}
+a{color:var(--claret)}
+
+/* ---- masthead ---- */
+.mast{padding-block:44px 8px}
+.word{font-family:var(--display);font-size:30px;font-weight:500;letter-spacing:-0.015em}
+.word em{font-style:normal;color:var(--claret)}
+.tag{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:6px}
+
+/* ---- sections ---- */
+section{padding-block:40px;border-top:1px solid var(--line)}
+section:first-of-type{border-top:0}
+.eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;
+         color:var(--claret);margin-bottom:14px}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(30px,4.6vw,46px);line-height:1.12;
+   letter-spacing:-0.02em;margin:0 0 18px;text-wrap:balance}
+h2{font-family:var(--display);font-weight:400;font-size:clamp(23px,3vw,30px);line-height:1.2;
+   letter-spacing:-0.015em;margin:0 0 14px;text-wrap:balance}
+h3{font-size:15px;font-weight:600;margin:0 0 4px;letter-spacing:-0.005em}
+p{margin:0 0 15px}
+.lead{font-size:18.5px;line-height:1.58}
+.muted{color:var(--muted)}
+strong{font-weight:600}
+
+/* ---- the sequence ---- */
+ol.steps{list-style:none;margin:22px 0 0;padding:0;display:grid;gap:2px}
+ol.steps li{display:grid;grid-template-columns:44px 1fr;gap:16px;padding:16px 0;border-bottom:1px solid var(--line)}
+ol.steps li:first-child{border-top:1px solid var(--line)}
+.step-n{font-family:var(--mono);font-size:12px;color:var(--claret);padding-top:3px;letter-spacing:.06em}
+
+/* ---- figures ---- */
+figure{margin:26px 0 0}
+figure img{display:block;width:100%;max-width:100%;border:1px solid var(--line);border-radius:4px;background:var(--panel)}
+figcaption{font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:9px;line-height:1.5}
+.figs{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:26px;margin-top:26px}
+.figs figure{margin:0}
+
+/* ---- contrast block ---- */
+.compare{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1px;
+         background:var(--line);border:1px solid var(--line);margin-top:22px}
+.compare > div{background:var(--panel);padding:20px}
+.compare h3{font-family:var(--mono);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;
+            color:var(--muted);margin-bottom:10px;font-weight:500}
+.compare ul{margin:0;padding-left:18px}
+.compare li{margin-bottom:7px}
+.compare li::marker{color:var(--muted)}
+.compare .us li::marker{color:var(--teal)}
+
+/* ---- pricing ---- */
+table.price{width:100%;border-collapse:collapse;margin-top:20px;font-variant-numeric:tabular-nums}
+table.price th{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+               color:var(--muted);text-align:left;font-weight:500;padding:0 12px 10px 0;border-bottom:1px solid var(--line)}
+table.price td{padding:13px 12px 13px 0;border-bottom:1px solid var(--line);vertical-align:baseline}
+table.price td:first-child{font-weight:600}
+table.price .amt{font-family:var(--mono);font-size:15px;white-space:nowrap}
+.price-note{font-size:14px;color:var(--muted);margin-top:14px}
+
+/* ---- honesty ---- */
+.limits{list-style:none;padding:0;margin:18px 0 0}
+.limits li{padding:10px 0 10px 26px;border-bottom:1px solid var(--line);position:relative}
+.limits li::before{content:"—";position:absolute;left:0;color:var(--amber);font-family:var(--mono)}
+
+/* ---- form ---- */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:24px;margin-top:22px;max-width:520px}
+label{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+      color:var(--muted);margin:14px 0 5px}
+label:first-of-type{margin-top:0}
+input,select{width:100%;font-family:var(--body);font-size:15px;color:var(--ink);background:var(--paper);
+             border:1px solid var(--line);border-radius:3px;padding:10px 11px}
+input:focus,select:focus{outline:2px solid var(--claret);outline-offset:1px}
+button{margin-top:18px;font-family:var(--body);font-size:15px;font-weight:600;color:#fff;background:var(--claret);
+       border:0;border-radius:3px;padding:11px 20px;cursor:pointer}
+button:disabled{opacity:.55;cursor:default}
+.formmsg{margin-top:13px;font-size:14.5px}
+.formmsg.good{color:var(--teal)}
+.formmsg.bad{color:var(--amber)}
+
+footer{border-top:1px solid var(--line);padding-block:26px 56px;font-size:13.5px;color:var(--muted)}
+footer p{margin:0 0 6px}
+@media (prefers-reduced-motion: no-preference){
+  button{transition:opacity .15s ease}
+}
+</style>
+
+<div class="page">
+
+  <header class="mast">
+    <div class="word">Renew<em>line</em></div>
+    <div class="tag">Renewal pipeline for IT resellers</div>
+  </header>
+
+  <section>
+    <div class="col">
+      <h1>The renewal you lose is the one nobody built a quote for.</h1>
+      <p class="lead">Licences, security subscriptions, care packs and support contracts all
+      expire on their own dates, sit in different portals, and end up in one spreadsheet that
+      somebody opens when they remember. Renewline reads that spreadsheet, tells you what is
+      about to lapse, and writes the renewal quote for you to send.</p>
+      <p class="muted">Built for resellers and VARs who sell licences but don't run an RMM —
+      the people every lifecycle tool on the market can't onboard, because there is no agent
+      anywhere to read data from.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">How it works</div>
+    <div class="col"><h2>Four steps, and the fourth one is the point.</h2></div>
+    <ol class="steps col">
+      <li><span class="step-n">01</span><div>
+        <h3>Drop in your export</h3>
+        <p class="muted">CSV from a PSA, a distributor portal, or the spreadsheet you actually use.
+        Columns are matched automatically — <span style="font-family:var(--mono);font-size:13px">Client Name</span>,
+        <span style="font-family:var(--mono);font-size:13px">Expiry Date</span>,
+        <span style="font-family:var(--mono);font-size:13px">Sell Price</span> and the other forty
+        spellings of the same thing. No mapping screen, no integration, no call.</p></div></li>
+      <li><span class="step-n">02</span><div>
+        <h3>Everything lands on one timeline</h3>
+        <p class="muted">Day/month dates read as day/month. <span style="font-family:var(--mono);font-size:13px">1.234,56&nbsp;€</span>
+        and <span style="font-family:var(--mono);font-size:13px">£1,234.56</span> both become money.
+        Anything unreadable is listed and skipped — never quietly guessed at.</p></div></li>
+      <li><span class="step-n">03</span><div>
+        <h3>You see what is at risk, in pounds</h3>
+        <p class="muted">Not a count of tickets. The value of everything expiring inside 60 days
+        that nobody has sent a quote for.</p></div></li>
+      <li><span class="step-n">04</span><div>
+        <h3>The quote and the email are already written</h3>
+        <p class="muted">Pick a customer, set your uplift, get a priced quote document and a
+        client-ready email. Copy, send, mark it sent. That is the whole job.</p></div></li>
+    </ol>
+  </section>
+
+  <section>
+    <div class="eyebrow">The product, today</div>
+    <div class="col">
+      <h2>Not a mockup.</h2>
+      <p class="muted">These are screenshots of the working build, loaded with a sample reseller
+      export of 64 renewal lines across twelve customers.</p>
+    </div>
+    <figure>
+      <img src="shot-dashboard.png" width="1280" height="1386"
+           alt="Renewline dashboard: tiles showing value at risk, quoted on time, won, lapse rate and lines under management, above a plain-text digest listing each renewal that expires within 60 days with no quote, and a bar chart of value by expiry window.">
+      <figcaption>The Monday view. Every line in the digest is money that expires soon and has no quote against it.</figcaption>
+    </figure>
+    <div class="figs">
+      <figure>
+        <img src="shot-renewals.png" width="1280" height="900"
+             alt="Renewals table listing customer, item, quantity, expiry date, days remaining, value and pipeline stage, with checkboxes for selecting a customer's lines.">
+        <figcaption>Select one customer's expiring lines and quote them together.</figcaption>
+      </figure>
+      <figure>
+        <img src="shot-quote.png" width="900" height="1100"
+             alt="A generated renewal quote document for a customer, listing six items with quantities, expiry dates, unit prices and totals, with a reference number, issue date and validity date.">
+        <figcaption>The document that comes out. Reference, validity date, per-line expiry.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Positioning</div>
+    <div class="col"><h2>Why another one of these.</h2>
+    <p class="muted">Lifecycle and renewal tools exist, and the good ones are good. They were
+    built for managed service providers: they read hardware and warranty data from an agent
+    installed on every endpoint, they price per endpoint, and they sell on annual terms.
+    If you resell licences rather than manage estates, none of that describes you.</p></div>
+    <div class="compare">
+      <div>
+        <h3>Built for the MSP model</h3>
+        <ul>
+          <li>Data comes from an RMM or PSA integration</li>
+          <li>Priced per endpoint or per managed device</li>
+          <li>Annual commitment, cancellation via your account manager</li>
+          <li>Hardware warranties first; software licences are a manual field</li>
+        </ul>
+      </div>
+      <div class="us">
+        <h3>Renewline</h3>
+        <ul>
+          <li>Data comes from your spreadsheet. Nothing to install</li>
+          <li>Flat rate by lines and users, not by endpoint</li>
+          <li>Month to month. Cancel in the app, no conversation</li>
+          <li>Licences and subscriptions first; warranties handled the same way</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Pricing</div>
+    <div class="col"><h2>Flat, and small enough that one saved renewal pays for the year.</h2></div>
+    <table class="price">
+      <thead><tr><th>Plan</th><th>Per month</th><th>Users</th><th>Renewal lines</th></tr></thead>
+      <tbody>
+        <tr><td>Free</td><td class="amt">£0</td><td>1</td><td>100</td></tr>
+        <tr><td>Solo</td><td class="amt">£29</td><td>2</td><td>750</td></tr>
+        <tr><td>Team</td><td class="amt">£79</td><td>10</td><td>5,000</td></tr>
+        <tr><td>Agency</td><td class="amt">£179</td><td>unlimited</td><td>25,000</td></tr>
+      </tbody>
+    </table>
+    <p class="price-note">Ex VAT. Month to month, cancel in one click; annual pays for ten months.
+    Design partners keep Team free for a year.</p>
+  </section>
+
+  <section>
+    <div class="eyebrow">Honest limits</div>
+    <div class="col">
+      <h2>What Renewline is not.</h2>
+      <p class="muted">Worth knowing before you spend twenty minutes on it.</p>
+      <ul class="limits">
+        <li>It is pre-release. No public sign-up yet, and no paying customers to point at.</li>
+        <li>It does not integrate with ConnectWise, Autotask, Halo or any RMM. That is deliberate for now — the import is the integration.</li>
+        <li>It does not invoice, take payment, or place orders with your distributor.</li>
+        <li>It does not discover assets. If a renewal is not in a file you have, Renewline cannot know about it.</li>
+        <li>Renewal pricing comes from your own last-sold prices plus an uplift you set. It does not fetch live distributor pricing.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="partners">
+    <div class="eyebrow">Design partners</div>
+    <div class="col">
+      <h2>Looking for five resellers to break it.</h2>
+      <p class="muted">The deal: send an anonymised export, get it back as a working renewal
+      pipeline, and tell me where it is wrong. Team plan free for twelve months, and your
+      import problems go to the front of the queue.</p>
+    </div>
+    <form class="card" id="waitform">
+      <label for="wl-email">Work email</label>
+      <input id="wl-email" name="email" type="email" required autocomplete="email" placeholder="you@yourcompany.co.uk">
+
+      <label for="wl-company">Company</label>
+      <input id="wl-company" name="company" type="text" autocomplete="organization" placeholder="Your reseller business">
+
+      <label for="wl-size">Roughly how many renewal lines a year</label>
+      <select id="wl-size" name="size">
+        <option value="">Prefer not to say</option>
+        <option value="&lt;100">Under 100</option>
+        <option value="100-500">100 – 500</option>
+        <option value="500-2000">500 – 2,000</option>
+        <option value="2000+">More than 2,000</option>
+      </select>
+
+      <label for="wl-tool">What you track renewals in today</label>
+      <input id="wl-tool" name="tool" type="text" placeholder="Excel, a PSA, memory…">
+
+      <button type="submit" id="wl-submit">Request a design-partner slot</button>
+      <div class="formmsg" id="wl-msg" hidden></div>
+    </form>
+  </section>
+
+  <footer>
+    <p>Renewline — pre-release. Built and operated as an autonomous software company; there are
+    no customers, no revenue and no testimonials yet, and this page will say so until there are.</p>
+    <p>Renewline handles renewal records, not end-customer personal data. Imports stay in your
+    own tenant and are never used to price anyone else's renewals.</p>
+  </footer>
+</div>
+
+<script>
+(() => {
+  window.RENEWLINE_SUBMIT = async () => { throw new Error('no endpoint yet'); };
+  addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('waitform');
+    if (!form) return;
+    form.querySelectorAll('input, select, button').forEach((el) => { el.disabled = true; });
+    const note = document.createElement('div');
+    note.className = 'formmsg bad';
+    note.textContent = 'Design-partner sign-up opens with the live demo, shortly. '
+      + 'Until then, reply to whoever sent you this link.';
+    form.appendChild(note);
+  });
+})();
+</script>
+<script>
+(() => {
+  'use strict';
+  const form = document.getElementById('waitform');
+  const msg = document.getElementById('wl-msg');
+  const btn = document.getElementById('wl-submit');
+
+  const say = (text, good) => {
+    msg.textContent = text;
+    msg.className = 'formmsg ' + (good ? 'good' : 'bad');
+    msg.hidden = false;
+  };
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('wl-email').value.trim();
+    if (!email) return;
+    btn.disabled = true;
+    const original = btn.textContent;
+    btn.textContent = 'Sending…';
+    say('The demo server may be asleep — this can take up to a minute the first time.', true);
+    const entry = {
+      email,
+      company: document.getElementById('wl-company').value.trim(),
+      size: document.getElementById('wl-size').value,
+      tool: document.getElementById('wl-tool').value.trim(),
+      source: 'landing',
+      submittedAt: new Date().toISOString(),
+    };
+    try {
+      await window.RENEWLINE_SUBMIT(entry);
+      form.querySelectorAll('input').forEach((i) => { i.value = ''; });
+      say('Noted — thank you. You will hear from me before the first public release.', true);
+      btn.textContent = 'Request received';
+    } catch {
+      say('That did not go through. Email the same details to the address on the repository and they will reach me.', false);
+      btn.disabled = false;
+      btn.textContent = original;
+    }
+  });
+})();
+</script>
+
+</body>
+</html>
