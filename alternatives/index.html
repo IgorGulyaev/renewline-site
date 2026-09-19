@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Renewal tracking tools compared — which fits a reseller without an RMM</title>
+<meta name="description" content="An honest comparison of lifecycle managers, PSA contract modules, renewal trackers and spreadsheets, written by the makers of one of them — including when not to use it.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://igorgulyaev.github.io/renewline-site/alternatives/">
+<meta property="og:title" content="Renewal tracking tools compared — which fits a reseller without an RMM">
+<meta property="og:description" content="An honest comparison of lifecycle managers, PSA contract modules, renewal trackers and spreadsheets, written by the makers of one of them — including when not to use it.">
+<meta property="og:type" content="website">
+<style>
+  :root{color-scheme:light dark;box-sizing:border-box;
+        padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+  body{margin:0;padding:0}
+  img{max-width:100%}
+  [hidden]{display:none!important}
+</style>
+</head>
+<body>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+:root{
+  --paper:#EEF1F3; --panel:#FFFFFF; --ink:#15191E; --muted:#5F6A75; --line:#D9DFE4;
+  --claret:#8E2B3F; --teal:#0F6357; --amber:#8A5A0C;
+  --display:'Newsreader',Georgia,'Times New Roman',serif;
+  --body:'IBM Plex Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#121619; --panel:#1A1F24; --ink:#E7ECF1; --muted:#95A1AC; --line:#2B333A;
+    --claret:#D9788C; --teal:#4FB9A0; --amber:#D7A44E;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#121619; --panel:#1A1F24; --ink:#E7ECF1; --muted:#95A1AC; --line:#2B333A;
+  --claret:#D9788C; --teal:#4FB9A0; --amber:#D7A44E;
+}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.62}
+.page{max-width:1000px;margin:0 auto;padding:0 20px 64px}
+.col{max-width:680px}
+a{color:var(--claret)}
+.mast{padding-block:36px 6px;display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.word{font-family:var(--display);font-size:24px;font-weight:500;letter-spacing:-0.015em}
+.word em{font-style:normal;color:var(--claret)}
+.word a{text-decoration:none;color:inherit}
+.tag{font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(29px,4.4vw,42px);line-height:1.13;
+   letter-spacing:-0.02em;margin:24px 0 16px;max-width:19ch;text-wrap:balance}
+h2{font-family:var(--display);font-weight:400;font-size:clamp(22px,3vw,28px);line-height:1.2;
+   letter-spacing:-0.015em;margin:0 0 14px;text-wrap:balance}
+h3{font-size:16px;font-weight:600;margin:0 0 6px}
+p{margin:0 0 15px}
+.lead{font-size:18px}
+.muted{color:var(--muted)}
+section{padding-block:36px;border-top:1px solid var(--line)}
+section:first-of-type{border-top:0;padding-top:0}
+.eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;
+         color:var(--claret);margin-bottom:14px}
+
+.decide{width:100%;border-collapse:collapse;margin-top:18px}
+.decide th{text-align:left;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+           color:var(--muted);font-weight:500;padding:0 14px 10px 0;border-bottom:1px solid var(--line)}
+.decide td{padding:14px 14px 14px 0;border-bottom:1px solid var(--line);vertical-align:top}
+.decide td:first-child{font-weight:500}
+.decide .rec{color:var(--teal);font-weight:600}
+.tblwrap{overflow-x:auto}
+
+.option{border-top:1px solid var(--line);padding:20px 0}
+.option:last-of-type{border-bottom:1px solid var(--line)}
+.option .kind{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+.option ul{margin:8px 0 0;padding-left:18px}
+.option li{margin-bottom:5px}
+.good::marker{color:var(--teal)}
+.bad::marker{color:var(--claret)}
+
+.callout{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--claret);
+         border-radius:0 5px 5px 0;padding:18px 20px;margin-top:20px}
+.callout p:last-child{margin-bottom:0}
+.sources{font-size:13.5px;color:var(--muted)}
+.sources li{margin-bottom:6px}
+footer{margin-top:36px;padding-top:20px;border-top:1px solid var(--line);font-size:13.5px;color:var(--muted)}
+</style>
+
+<div class="page">
+  <header class="mast">
+    <div class="word"><a href="../">Renew<em>line</em></a></div>
+    <div class="tag">Comparison · September 2026</div>
+  </header>
+
+  <section>
+    <div class="col">
+      <h1>Renewal tracking tools, and which one actually fits you.</h1>
+      <p class="lead">We make one of these, so read this knowing that. We have still tried to
+      write the page we wanted when we looked into the category — including the cases where the
+      answer is not us.</p>
+      <p class="muted">One question decides most of it: <strong>do you run an RMM?</strong>
+      Almost every lifecycle tool sources its data from an agent installed on managed endpoints.
+      If you have that agent, those tools do things we do not. If you sell licences and manage no
+      endpoints, they have nothing to read, and the shortlist collapses to a much smaller set.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Start here</div>
+    <h2>Pick by what you have, not by feature list.</h2>
+    <div class="tblwrap">
+      <table class="decide">
+        <thead><tr><th>If this is you</th><th>Then look at</th><th>Why</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>MSP with an RMM on every endpoint, hardware-heavy</td>
+            <td class="rec">A lifecycle manager</td>
+            <td>Warranty lookups and asset ageing come straight from the agent. That automation is real and we do not replicate it.</td>
+          </tr>
+          <tr>
+            <td>You already pay for a PSA you keep current</td>
+            <td class="rec">Your PSA's own contract module</td>
+            <td>It is included. If your data genuinely lives there and stays accurate, adding a tool adds a sync problem.</td>
+          </tr>
+          <tr>
+            <td>Reseller or VAR, licences and subscriptions, no RMM</td>
+            <td class="rec">Renewline</td>
+            <td>Your renewals live in a spreadsheet, which is the one thing agent-based tools cannot read.</td>
+          </tr>
+          <tr>
+            <td>Under about 50 renewals a year, one person</td>
+            <td class="rec">A spreadsheet and a calendar</td>
+            <td>Honestly. Use our <a href="../calendar/">free calendar builder</a> to get the reminders out of the sheet and spend nothing.</td>
+          </tr>
+          <tr>
+            <td>Contracts across the whole business, not just IT</td>
+            <td class="rec">General contract-management software</td>
+            <td>Renewal tools model products, quantities and vendors. A CLM models agreements and clauses. Different job.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">The options</div>
+    <h2>What each kind is actually good at.</h2>
+
+    <div class="option">
+      <div class="kind">Category leader</div>
+      <h3>Lifecycle managers (ScalePad Lifecycle Manager and similar)</h3>
+      <p class="muted">The most complete answer if you are an MSP. Warranty data is looked up
+      automatically, assets age themselves, and the client-facing reporting is mature.</p>
+      <ul>
+        <li class="good">Hardware warranty automation nobody else matches</li>
+        <li class="good">Built-in QBR and budget reporting</li>
+        <li class="bad">Needs an RMM or PSA integration to have any data at all</li>
+        <li class="bad">Reported at roughly $149–250+ per month and scaling with size, on
+          twelve-month auto-renewing terms, with cancellation handled through sales rather than
+          a billing page</li>
+        <li class="bad">Reported to treat firewall and security-licence expiry as manual-entry
+          fields rather than automated data</li>
+      </ul>
+    </div>
+
+    <div class="option">
+      <div class="kind">Cheaper cohort</div>
+      <h3>Dedicated renewal and vCIO trackers</h3>
+      <p class="muted">A group of smaller tools has grown up positioning explicitly against the
+      leader's price and contract terms — reported price points run from about $29 to $375 per
+      month depending on the product and client count.</p>
+      <ul>
+        <li class="good">Much cheaper, often month to month</li>
+        <li class="good">Usually quicker to set up</li>
+        <li class="bad">Most still assume an MSP shape: clients, managed devices, QBRs</li>
+        <li class="bad">Feature depth varies a lot — check whether renewals are the product or a tab</li>
+      </ul>
+    </div>
+
+    <div class="option">
+      <div class="kind">Already paid for</div>
+      <h3>Your PSA's contract module</h3>
+      <ul>
+        <li class="good">No extra cost, no extra login, no sync</li>
+        <li class="good">Fine when the PSA is genuinely your system of record</li>
+        <li class="bad">Only as good as how current you keep it, which is the usual failure</li>
+        <li class="bad">Tracks dates; rarely produces the renewal quote</li>
+      </ul>
+    </div>
+
+    <div class="option">
+      <div class="kind">Adjacent</div>
+      <h3>Generic expiry-reminder and contract tools</h3>
+      <ul>
+        <li class="good">Cheap, simple, work for any kind of expiring thing</li>
+        <li class="good">Good if you also track insurance, certifications, leases</li>
+        <li class="bad">No concept of vendor, SKU, seat count, margin or uplift</li>
+        <li class="bad">You get a reminder, then still build the quote by hand</li>
+      </ul>
+    </div>
+
+    <div class="option">
+      <div class="kind">The incumbent nobody lists</div>
+      <h3>A spreadsheet</h3>
+      <p class="muted">Most small resellers use one, and for small numbers it is the right answer.
+      It stops working when nobody opens it in a busy month. If you are going to use a sheet, use a
+      good one: <a href="../renewal-tracker-template.xlsx">our template is free</a> and colours a
+      renewal red once it has passed.</p>
+      <ul>
+        <li class="good">Free, flexible, already understood by everyone</li>
+        <li class="bad">Silent: it never tells you anything, you have to go and look</li>
+        <li class="bad">The renewal you miss is the one nobody opened the sheet for</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Where we fit</div>
+    <h2>Renewline, and when not to use it.</h2>
+    <div class="col">
+      <p>We built for the case none of the above covers: a reseller whose renewal data is in a
+      spreadsheet and who has no agent anywhere. The import is the integration — you drop in the
+      export you already have, and out comes what is expiring, what has no quote against it, and
+      the priced quote plus client email for the ones that do.</p>
+      <p><strong>Do not use us if</strong> you run an RMM and your problem is hardware warranty
+      data — a lifecycle manager will serve you better and we will say so. Do not use us if you
+      need invoicing, order placement or asset discovery; we do none of those. And if you have
+      thirty renewals a year, the <a href="../calendar/">free calendar tool</a> is probably
+      enough, costs nothing, and we would rather you used that than paid us for something you
+      do not need yet.</p>
+    </div>
+    <div class="callout">
+      <p><strong>Renewline is pre-release.</strong> There are no paying customers and no
+      testimonials, and this page will say so until there are. What exists is a working product
+      you can <a href="https://renewline-demo.onrender.com">open right now with sample data</a>,
+      no signup, and five design-partner places.</p>
+      <p><a href="../#partners">Ask for one of them</a>, or email
+      <a href="mailto:renewline.uk@gmail.com">renewline.uk@gmail.com</a>.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Sources and caveats</div>
+    <div class="col">
+      <p class="muted">Pricing and packaging in this category change often. Everything above
+      marked "reported" comes from publicly published comparisons and vendor pages read in
+      September 2026, not from our own accounts with those products. Check current terms with the
+      vendor before deciding anything — and tell us if something here is out of date, because we
+      would rather fix it than leave it wrong.</p>
+      <ul class="sources">
+        <li><a href="https://www.scalepad.com/lifecycle-manager/pricing" rel="nofollow noopener">ScalePad Lifecycle Manager pricing</a></li>
+        <li><a href="https://www.msprenewals.com/blog/scalepad-alternatives-2026" rel="nofollow noopener">A competitor's 2026 alternatives comparison</a>, the source of the price band and contract-terms claims</li>
+        <li><a href="https://www.zomentum.com/blog/best-msp-quoting-software-2026" rel="nofollow noopener">Category overview of MSP quoting tools, 2026</a></li>
+      </ul>
+    </div>
+  </section>
+
+  <footer>
+    <p><a href="../">Renewline</a> · <a href="../calendar/">Free renewal calendar builder</a> ·
+    <a href="mailto:renewline.uk@gmail.com">renewline.uk@gmail.com</a></p>
+    <p>Written by the people who make one of the products listed. Corrections welcome.</p>
+  </footer>
+</div>
+
+</body>
+</html>
