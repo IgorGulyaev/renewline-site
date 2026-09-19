@@ -302,17 +302,18 @@ footer p{margin:0 0 6px}
 
 <script>
 (() => {
-  window.RENEWLINE_SUBMIT = async () => { throw new Error('no endpoint yet'); };
-  addEventListener('DOMContentLoaded', () => {
-    const form = document.getElementById('waitform');
-    if (!form) return;
-    form.querySelectorAll('input, select, button').forEach((el) => { el.disabled = true; });
-    const note = document.createElement('div');
-    note.className = 'formmsg bad';
-    note.textContent = 'Design-partner sign-up opens with the live demo, shortly. '
-      + 'Until then, reply to whoever sent you this link.';
-    form.appendChild(note);
-  });
+  const API = "https://renewline-demo.onrender.com";
+  window.RENEWLINE_SUBMIT = async (entry) => {
+    if (!API) throw new Error('no endpoint configured');
+    // text/plain keeps this a CORS "simple request": no preflight, so a cold
+    // free-tier server only has to answer once.
+    const res = await fetch(API + '/api/waitlist', {
+      method: 'POST',
+      headers: { 'content-type': 'text/plain;charset=UTF-8' },
+      body: JSON.stringify(entry),
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+  };
 })();
 </script>
 <script>
